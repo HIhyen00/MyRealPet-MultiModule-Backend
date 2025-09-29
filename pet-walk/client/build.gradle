@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    // WebFlux (WebClient 사용)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // 프로젝트 의존성
+    implementation project(':pet-walk:dto')
+    implementation project(':pet-walk:core')
+    implementation project(':common')
+}

@@ -1,0 +1,11 @@
+rootProject.name = 'MyRealPet-MultiModule-Backend'
+
+include ':pet-walk:dto'
+include ':pet-walk:client'
+include ':pet-walk:core'
+include ':pet-walk:api'
+include ':account:dto'
+include ':account:client'
+include ':account:core'
+include ':account:api'
+include ':common'

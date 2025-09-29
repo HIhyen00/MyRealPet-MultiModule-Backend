@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+jar {
+    archiveBaseName = 'pet-walk-core'
+}
+
+dependencies {
+    // 핵심 비즈니스 로직용 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation project(':pet-walk:dto')
+    implementation project(':common')
+}

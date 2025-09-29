@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // JSON 직렬화용
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+    // Validation
+    implementation 'jakarta.validation:jakarta.validation-api'
+}
