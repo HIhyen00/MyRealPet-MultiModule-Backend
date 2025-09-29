@@ -63,17 +63,6 @@ public class AccountController {
         return ResponseEntity.ok(user);
     }
 
-    /**
-     * 카카오 로그인 (Authorization Code) - 단순화됨
-     * @param kakaoLoginRequest 카카오 로그인 요청 정보
-     * @return 로그인 응답 (토큰 포함)
-     */
-    @PostMapping("/kakao")
-    public ResponseEntity<LoginResponse> kakaoLogin(@RequestBody KakaoLoginRequest kakaoLoginRequest) {
-        log.info("Kakao login request received with code: {}", kakaoLoginRequest.getCode());
-        // 단순화: 복잡한 OAuth 처리 대신 기본 응답
-        throw new UnsupportedOperationException("Kakao login temporarily disabled for simplification");
-    }
 
     /**
      * 카카오 로그인 (Access Token)
