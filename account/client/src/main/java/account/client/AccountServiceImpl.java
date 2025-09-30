@@ -120,11 +120,11 @@ public class AccountServiceImpl implements AccountService {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        // 간단한 세션 토큰 생성 (UUID)
+        // 세션 토큰 생성 (UUID)
         String sessionToken = UUID.randomUUID().toString();
 
-        // Redis에 사용자 세션 저장
-        userSessionUtil.saveUserSession(account.getId(), account.getUsername());
+        // Redis에 세션 저장 (토큰을 키로 사용)
+        userSessionUtil.saveSession(sessionToken, account.getId(), account.getUsername());
 
         return LoginResponse.of(sessionToken, account.getId(),
                                account.getUsername(), Duration.ofHours(24));
@@ -138,11 +138,11 @@ public class AccountServiceImpl implements AccountService {
 
         Account account = createAccount(registerRequest.getId(), registerRequest.getPassword());
 
-        // 간단한 세션 토큰 생성 (UUID)
+        // 세션 토큰 생성 (UUID)
         String sessionToken = UUID.randomUUID().toString();
 
-        // Redis에 사용자 세션 저장
-        userSessionUtil.saveUserSession(account.getId(), account.getUsername());
+        // Redis에 세션 저장 (토큰을 키로 사용)
+        userSessionUtil.saveSession(sessionToken, account.getId(), account.getUsername());
 
         return LoginResponse.of(sessionToken, account.getId(),
                                account.getUsername(), Duration.ofHours(24));
@@ -150,8 +150,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public void logout(String token) {
-        // 단순화: 로그아웃은 프론트엔드에서 토큰을 삭제하면 됨
-        // 서버에서는 특별한 처리 불필요 (세션은 만료시간으로 자동 정리)
+        // Redis에서 세션 삭제
+        userSessionUtil.removeSession(token);
         log.info("User logged out with token: {}", token);
     }
 
@@ -168,11 +168,11 @@ public class AccountServiceImpl implements AccountService {
 
         Account account = saveOrUpdateSocialUser(attributes);
 
-        // 간단한 세션 토큰 생성 (UUID)
+        // 세션 토큰 생성 (UUID)
         String sessionToken = UUID.randomUUID().toString();
 
-        // Redis에 사용자 세션 저장
-        userSessionUtil.saveUserSession(account.getId(), account.getName());
+        // Redis에 세션 저장 (토큰을 키로 사용)
+        userSessionUtil.saveSession(sessionToken, account.getId(), account.getName());
 
         return LoginResponse.of(sessionToken, account.getId(),
                                account.getName(), Duration.ofHours(24));

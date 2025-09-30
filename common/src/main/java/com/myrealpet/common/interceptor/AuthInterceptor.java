@@ -29,51 +29,42 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // Authorization 헤더 확인
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("Missing or invalid Authorization header for URI: {}", uri);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Authorization header required\"}");
-            response.setContentType("application/json");
             return false;
         }
 
-        // 간단한 방법: 프론트에서 X-User-ID 헤더로 userId 전송
-        String userIdHeader = request.getHeader("X-User-ID");
-        if (userIdHeader == null) {
-            log.warn("Missing X-User-ID header for URI: {}", uri);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"X-User-ID header required\"}");
+        // Bearer 토큰 추출
+        String token = authHeader.substring(7);
+
+        // Redis에서 세션 조회 (단일 조회로 간소화)
+        Map<String, Object> session = userSessionUtil.getSession(token);
+        if (session == null) {
+            log.warn("Invalid or expired session for URI: {}", uri);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
             return false;
         }
 
-        try {
-            Long userId = Long.parseLong(userIdHeader);
+        // 세션에서 userId와 username 추출
+        Object userIdObj = session.get("userId");
+        Long userId = userIdObj instanceof Integer ? ((Integer) userIdObj).longValue() : (Long) userIdObj;
+        String username = (String) session.get("username");
 
-            // Redis에서 세션 확인
-            Map<String, Object> session = userSessionUtil.getUserSession(userId);
-            if (session == null) {
-                log.warn("No active session found for userId: {}", userId);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"error\":\"No active session found\"}");
-                response.setContentType("application/json");
-                return false;
-            }
+        // 요청에 사용자 정보 저장 (컨트롤러에서 사용 가능)
+        request.setAttribute("userId", userId);
+        request.setAttribute("username", username);
 
-            // 요청에 userId 저장하여 컨트롤러에서 사용할 수 있도록 함
-            request.setAttribute("userId", userId);
-            request.setAttribute("username", session.get("username"));
+        // 세션 갱신 (매 요청마다 TTL 연장)
+        userSessionUtil.refreshSession(token);
 
-            log.debug("Authentication successful for userId: {}, username: {}", userId, session.get("username"));
-            return true;
-
-        } catch (NumberFormatException e) {
-            log.warn("Invalid userId format: {}", userIdHeader);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Invalid userId format\"}");
-            response.setContentType("application/json");
-            return false;
-        }
+        log.debug("Authentication successful for userId: {}, username: {}, uri: {}", userId, username, uri);
+        return true;
     }
 }
