@@ -15,7 +15,4 @@ public class SearchMeta {
 
     @JsonProperty("is_end")
     private boolean isEnd;
-
-    @JsonProperty("same_name")
-    private SearchSameName searchSameName;
 }

@@ -7,10 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import petwalk.dto.ReverseGeocodingRequest;
 import petwalk.dto.SearchRequest;
 import petwalk.dto.SearchType;
-import petwalk.dto.ReverseGeocodingResponse;
 import petwalk.dto.SearchResponse;
 import petwalk.core.service.KakaoMapsService;
 
@@ -114,38 +112,4 @@ public class KakaoMapsServiceImpl implements KakaoMapsService {
 
         return uriBuilder.build();
     }
-
-    @Override
-    public Mono<ReverseGeocodingResponse> reverseGeocoding(ReverseGeocodingRequest request) {
-        log.debug("Executing reverse geocoding for coordinates: x={}, y={}", request.getX(), request.getY());
-
-        validateReverseGeocodingRequest(request);
-
-        return kakaoWebClient.get()
-                .uri(uriBuilder -> buildReverseGeocodingUri(uriBuilder, request))
-                .header("Authorization", "KakaoAK " + kakaoRestApiKey)
-                .retrieve()
-                .bodyToMono(ReverseGeocodingResponse.class)
-                .doOnSuccess(response -> log.debug("Reverse geocoding completed successfully"))
-                .doOnError(error -> log.error("Reverse geocoding failed: {}", error.getMessage()));
-    }
-
-    private void validateReverseGeocodingRequest(ReverseGeocodingRequest request) {
-        if (request.getX() == null || request.getY() == null) {
-            throw new IllegalArgumentException("x, y 좌표는 필수입니다.");
-        }
-    }
-
-    private java.net.URI buildReverseGeocodingUri(org.springframework.web.util.UriBuilder uriBuilder,
-                                                  ReverseGeocodingRequest request) {
-        uriBuilder.path("/v2/local/geo/coord2address.json")
-                .queryParam("x", request.getX())
-                .queryParam("y", request.getY());
-
-        Optional.ofNullable(request.getInputCoord()).ifPresent(inputCoord ->
-                uriBuilder.queryParam("input_coord", inputCoord));
-
-        return uriBuilder.build();
-    }
-
 }

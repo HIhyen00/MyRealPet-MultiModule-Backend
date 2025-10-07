@@ -67,27 +67,6 @@ public class WalkRouteServiceImpl implements WalkRouteService {
     }
 
     @Override
-    public WalkRouteResponse updateWalkRoute(Long routeId, Long userId, UpdateWalkRouteRequest request) {
-        try {
-            WalkRoute walkRoute = walkRouteRepository.findById(routeId)
-                    .filter(route -> route.getUserId().equals(userId))
-                    .orElseThrow(() -> new RuntimeException("Walk route not found"));
-
-            String coordinatesJson = objectMapper.writeValueAsString(request.getCoordinates());
-            double distance = calculateDistance(request.getCoordinates());
-
-            walkRoute.updateRoute(request.getName(), request.getDescription(), coordinatesJson, distance);
-            WalkRoute updated = walkRouteRepository.save(walkRoute);
-
-            return convertToResponse(updated);
-
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize coordinates", e);
-            throw new RuntimeException("Failed to update walk route", e);
-        }
-    }
-
-    @Override
     public void deleteWalkRoute(Long routeId, Long userId) {
         WalkRoute walkRoute = walkRouteRepository.findById(routeId)
                 .filter(route -> route.getUserId().equals(userId))
@@ -120,13 +99,32 @@ public class WalkRouteServiceImpl implements WalkRouteService {
     }
 
     private WalkRouteListResponse convertToListResponse(WalkRoute walkRoute) {
-        return WalkRouteListResponse.builder()
-                .id(walkRoute.getId())
-                .name(walkRoute.getName())
-                .description(walkRoute.getDescription())
-                .distance(walkRoute.getDistance())
-                .createdAt(walkRoute.getCreatedAt())
-                .build();
+        try {
+            List<Coordinate> coordinates = objectMapper.readValue(
+                    walkRoute.getCoordinatesJson(),
+                    new TypeReference<List<Coordinate>>() {}
+            );
+
+            return WalkRouteListResponse.builder()
+                    .id(walkRoute.getId())
+                    .name(walkRoute.getName())
+                    .description(walkRoute.getDescription())
+                    .coordinates(coordinates)
+                    .distance(walkRoute.getDistance())
+                    .createdAt(walkRoute.getCreatedAt())
+                    .build();
+
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize coordinates for list response", e);
+            // coordinates 없이 반환
+            return WalkRouteListResponse.builder()
+                    .id(walkRoute.getId())
+                    .name(walkRoute.getName())
+                    .description(walkRoute.getDescription())
+                    .distance(walkRoute.getDistance())
+                    .createdAt(walkRoute.getCreatedAt())
+                    .build();
+        }
     }
 
     private double calculateDistance(List<Coordinate> coordinates) {

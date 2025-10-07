@@ -68,56 +68,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> findAllAccounts() {
-        return accountRepository.findAll();
-    }
-
-    @Override
-    public List<Account> findInactiveAccounts() {
-        return accountRepository.findInactiveAccounts();
-    }
-
-    @Override
-    public Account updatePassword(Long accountId, String newPassword) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
-        account.updatePassword(passwordEncoder.encode(newPassword)); // Encode new password
-        return accountRepository.save(account);
-    }
-
-    @Override
-    public Account deactivateAccount(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
-        account.deactivate();
-        return accountRepository.save(account);
-    }
-
-    @Override
-    public Account activateAccount(Long accountId) {
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
-        account.activate();
-        return accountRepository.save(account);
-    }
-
-    @Override
-    public void deleteAccount(Long accountId) {
-        accountRepository.deleteById(accountId);
-    }
-
-    @Override
     public boolean isUsernameExists(String username) {
         return accountRepository.existsByUsername(username);
     }
 
     @Override
     public LoginResponse login(String username, String password) {
-        Account account = accountRepository.findByUsernameAndIsActiveTrue(username)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
         if (!passwordEncoder.matches(password, account.getPassword())) {
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
         // 세션 토큰 생성 (UUID)
@@ -133,7 +94,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public LoginResponse register(RegisterRequest registerRequest) {
         if (isUsernameExists(registerRequest.getId())) {
-            throw new IllegalArgumentException("Username '" + registerRequest.getId() + "' already exists");
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
         Account account = createAccount(registerRequest.getId(), registerRequest.getPassword());
@@ -153,12 +114,6 @@ public class AccountServiceImpl implements AccountService {
         // Redis에서 세션 삭제
         userSessionUtil.removeSession(token);
         log.info("User logged out with token: {}", token);
-    }
-
-    @Override
-    public void logoutAll(Long accountId) {
-        log.info("Logout all for account: {}", accountId);
-        // Note: 전체 로그아웃 기능은 향후 Redis를 통한 토큰 관리가 구현되면 추가 예정
     }
 
     @Override
@@ -198,13 +153,32 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getCurrentUser(String token) {
-        // 단순화: 토큰 검증 없이 직접 처리
-        // 실제로는 인터셉터에서 이미 세션 검증을 했으므로 불필요
-        throw new UnsupportedOperationException("Use getUserById instead");
+        // Redis에서 세션 조회
+        Map<String, Object> session = userSessionUtil.getSession(token);
+        if (session == null) {
+            throw new RuntimeException("유효하지 않거나 만료된 토큰입니다.");
+        }
+
+        // 세션에서 userId 추출
+        Object userIdObj = session.get("userId");
+        Long userId = userIdObj instanceof Integer ? ((Integer) userIdObj).longValue() : (Long) userIdObj;
+
+        // userId로 Account 조회
+        return accountRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("계정을 찾을 수 없습니다."));
     }
 
-    public Account getUserById(Long userId) {
-        return accountRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + userId));
+    @Override
+    public void deleteAccount(String token) {
+        // 현재 사용자 조회
+        Account account = getCurrentUser(token);
+
+        // 세션 삭제 (로그아웃 처리)
+        userSessionUtil.removeSession(token);
+
+        // 계정 완전 삭제 (하드 삭제)
+        accountRepository.delete(account);
+
+        log.info("Account deleted: userId={}, username={}", account.getId(), account.getUsername());
     }
 }

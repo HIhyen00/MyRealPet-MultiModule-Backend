@@ -75,4 +75,15 @@ public class AccountController {
         LoginResponse loginResponse = accountService.loginWithKakaoToken(kakaoTokenRequest.getAccessToken());
         return ResponseEntity.ok(loginResponse);
     }
+
+    /**
+     * 회원탈퇴
+     * @param token 인증 토큰
+     * @return void
+     */
+    @DeleteMapping("/account")
+    public ResponseEntity<Void> deleteAccount(@RequestHeader("Authorization") String token) {
+        accountService.deleteAccount(token.replace("Bearer ", ""));
+        return ResponseEntity.ok().build();
+    }
 }

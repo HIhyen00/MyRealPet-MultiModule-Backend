@@ -16,10 +16,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // In our case, username can be email, username, or kakaoId
         return accountRepository.findByUsername(username)
-                .or(() -> accountRepository.findByEmail(username))
-                .or(() -> accountRepository.findByKakaoId(username))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
     }
 }

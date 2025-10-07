@@ -202,3 +202,44 @@ export default defineConfig({
   }
 })
 ```
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+## 🤖 프로젝트 구조 심층 분석 (AI 분석)
+
+이 섹션은 AI가 프로젝트 코드를 직접 분석하여 작성한 내용입니다.
+
+### 주요 아키텍처
+
+- **Gradle 멀티모듈**: 기능 단위(계정, 산책)로 모듈이 분리되어 독립적인 개발 및 배포가 용이합니다.
+- **계층형 아키텍처 (Layered Architecture)**: 각 모듈은 `api`(표현), `core`(도메인), `client`(서비스 구현), `dto`(데이터)로 역할이 명확하게 나뉘어 있습니다.
+- **인터페이스 기반 설계**: `core` 모듈에 서비스 인터페이스를 정의하고, `client` 또는 다른 모듈에서 이를 구현하여 모듈 간 결합도를 낮춥니다. (느슨한 결합)
+- **중앙 인증 처리**: `common` 모듈의 `AuthInterceptor`가 로그인/회원가입을 제외한 대부분의 API 요청을 가로채 인증을 전담합니다.
+
+### 모듈 상세 분석
+
+#### 1. `common` 모듈: 전역 설정 및 인증 처리
+- **`interceptor/AuthInterceptor.java`**: 이 프로젝트의 **인증/인가 핵심**입니다.
+    - `/api/auth/**` 등 일부 경로를 제외한 모든 `/api/**` 요청을 가로채 헤더의 `Bearer 토큰`을 검증합니다.
+    - 토큰이 유효하면 Redis에서 세션 정보를 조회하여 요청에 `userId`를 담아 컨트롤러로 전달합니다.
+    - 즉, **로그인하지 않은 사용자는 대부분의 API를 사용할 수 없습니다.**
+- **`config/CommonWebConfig.java`**: `application.yml` 파일의 `app.auth.interceptor.enabled=true` 설정이 있어야만 위 `AuthInterceptor`를 활성화합니다.
+
+#### 2. `account` 모듈: 사용자 인증/계정 관리
+- **`api/controller/AccountController.java`**: 로그인, 회원가입, 로그아웃, 카카오 로그인 등 사용자에게 직접 노출되는 API 엔드포인트입니다. 모든 실제 로직은 `AccountService`에 위임합니다.
+- **`core/service/AccountService.java`**: `account` 모듈이 제공하는 기능 목록(인터페이스)입니다.
+- **`api/config/SecurityConfig.java`**: JWT 대신 세션 토큰을 사용하므로 `STATELESS` 정책을 사용하고, `csrf` 보호는 비활성화합니다.
+
+#### 3. `pet-walk` 모듈: 산책 기능 및 외부 API 연동
+- **`api/controller/WalkRouteController.java`**: 산책로 생성/조회/수정/삭제(CRUD) API를 제공합니다. 모든 기능은 `AuthInterceptor`가 요청에 담아준 `userId`를 기반으로 동작하므로, **반드시 로그인이 필요**합니다.
+- **`client/service/KakaoMapsServiceImpl.java`**: **카카오 지도 API를 실제로 호출하는 구현체**입니다.
+    - `WebClient`를 사용하여 카카오 서버와 비동기 통신합니다.
+    - `core` 모듈은 `KakaoMapsService` 인터페이스에만 의존하므로, 나중에 구글 지도로 변경해도 `core` 모듈의 수정 없이 이 파일만 교체하면 됩니다. (SOLID 원칙)
+
+### 사용되지 않는 코드 및 확인 필요 사항
+
+- **`account:core:service:AccountService`의 미사용 메소드**:
+    - `AccountController`에서 현재 사용하지 않는 `updatePassword`, `deactivateAccount`, `deleteAccount` 등의 메소드들이 인터페이스에 정의되어 있습니다.
+    - 이는 현재 API로는 호출할 수 없으며, 향후 관리자 기능 등으로 사용될 가능성이 있습니다.
+
+- **`account:client` 모듈**:
+    - 현재 `account:api` 모듈은 이 모듈을 전혀 사용하지 않고 `account:core`에 직접 의존합니다.
+    - 따라서 `account:client`는 **현재 프로젝트에서 사용되지 않는 모듈**입니다. 추후 마이크로서비스 간 통신을 위해 미리 만들어 둔 뼈대 코드로 보입니다.

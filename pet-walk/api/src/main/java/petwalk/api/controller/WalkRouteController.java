@@ -65,24 +65,6 @@ public class WalkRouteController {
     }
 
     /**
-     * 산책로 수정
-     * @param routeId 산책로 ID
-     * @param request 산책로 수정 요청
-     * @param httpRequest HTTP 요청 (인터셉터에서 userId 설정)
-     * @return 수정된 산책로 정보
-     */
-    @PutMapping("/{routeId}")
-    public ResponseEntity<WalkRouteResponse> updateWalkRoute(
-            @PathVariable Long routeId,
-            @RequestBody UpdateWalkRouteRequest request,
-            HttpServletRequest httpRequest) {
-
-        Long userId = (Long) httpRequest.getAttribute("userId");
-        WalkRouteResponse response = walkRouteService.updateWalkRoute(routeId, userId, request);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
      * 산책로 삭제
      * @param routeId 산책로 ID
      * @param httpRequest HTTP 요청 (인터셉터에서 userId 설정)
