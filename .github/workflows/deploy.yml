@@ -1,4 +1,4 @@
-name: Deploy to EC2 with Docker Hub
+name: Deploy to EC2 with Self-hosted Runner
 
 on:
   push:
@@ -48,95 +48,95 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            # Create app directory
-            mkdir -p /home/ec2-user/app
-            cd /home/ec2-user/app
+      - name: Create app directory
+        run: |
+          mkdir -p /home/ec2-user/app
+          cd /home/ec2-user/app
 
-            # Create docker-compose file directly on EC2
-            cat > docker-compose.prod.yml << 'EOF'
-            version: '3.8'
+      - name: Create docker-compose file
+        run: |
+          cd /home/ec2-user/app
+          cat > docker-compose.prod.yml << 'EOF'
+          version: '3.8'
 
-            services:
-              account:
-                image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
-                container_name: myrealpet-account
-                ports:
-                  - "8005:8005"
-                environment:
-                  - SPRING_PROFILES_ACTIVE=prod
-                  - ACCOUNT_PORT=8005
-                  - ACCOUNT_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-                  - ACCOUNT_DB_USERNAME=${{ secrets.DB_USERNAME }}
-                  - ACCOUNT_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                  - REDIS_HOST=localhost
-                  - REDIS_PORT=6379
-                  - REDIS_PASSWORD=
-                  - CORS_ALLOWED_ORIGINS=*
-                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
-                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
-                  - PORT=8005
-                restart: unless-stopped
-                networks:
-                  - myrealpet-network
+          services:
+            account:
+              image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
+              container_name: myrealpet-account
+              ports:
+                - "8005:8005"
+              environment:
+                - SPRING_PROFILES_ACTIVE=prod
+                - ACCOUNT_PORT=8005
+                - ACCOUNT_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+                - ACCOUNT_DB_USERNAME=${{ secrets.DB_USERNAME }}
+                - ACCOUNT_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                - REDIS_HOST=localhost
+                - REDIS_PORT=6379
+                - REDIS_PASSWORD=
+                - CORS_ALLOWED_ORIGINS=*
+                - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+                - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+                - PORT=8005
+              restart: unless-stopped
+              networks:
+                - myrealpet-network
 
-              pet-walk:
-                image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
-                container_name: myrealpet-petwalk
-                ports:
-                  - "8002:8002"
-                environment:
-                  - SPRING_PROFILES_ACTIVE=prod
-                  - PETWALK_PORT=8002
-                  - PETWALK_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_petwalk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-                  - PETWALK_DB_USERNAME=${{ secrets.DB_USERNAME }}
-                  - PETWALK_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                  - REDIS_HOST=localhost
-                  - REDIS_PORT=6379
-                  - REDIS_PASSWORD=
-                  - CORS_ALLOWED_ORIGINS=*
-                  - KAKAO_API_KEY=${{ secrets.KAKAO_API_KEY }}
-                  - PORT=8002
-                restart: unless-stopped
-                networks:
-                  - myrealpet-network
+            pet-walk:
+              image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
+              container_name: myrealpet-petwalk
+              ports:
+                - "8002:8002"
+              environment:
+                - SPRING_PROFILES_ACTIVE=prod
+                - PETWALK_PORT=8002
+                - PETWALK_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_petwalk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+                - PETWALK_DB_USERNAME=${{ secrets.DB_USERNAME }}
+                - PETWALK_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                - REDIS_HOST=localhost
+                - REDIS_PORT=6379
+                - REDIS_PASSWORD=
+                - CORS_ALLOWED_ORIGINS=*
+                - KAKAO_API_KEY=${{ secrets.KAKAO_API_KEY }}
+                - PORT=8002
+              restart: unless-stopped
+              networks:
+                - myrealpet-network
 
-            networks:
-              myrealpet-network:
-                driver: bridge
-            EOF
+          networks:
+            myrealpet-network:
+              driver: bridge
+          EOF
 
-            # Stop existing containers
-            docker-compose -f docker-compose.prod.yml down || true
-
-            # Pull latest images
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
-            docker pull ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
-
-            # Start containers
-            docker-compose -f docker-compose.prod.yml up -d
-
-            # Clean up unused images
-            docker image prune -af || true
-
-            # Show status
-            echo "=== Running Containers ==="
-            docker ps
-
-            echo "=== Waiting for services to start ==="
-            sleep 20
-
-            echo "=== Account Service Logs ==="
-            docker logs myrealpet-account --tail=30
-
-            echo "=== Pet-Walk Service Logs ==="
-            docker logs myrealpet-petwalk --tail=30
+      - name: Deploy with Docker Compose
+        run: |
+          cd /home/ec2-user/app
+          
+          # Stop existing containers
+          docker-compose -f docker-compose.prod.yml down || true
+          
+          # Pull latest images
+          docker pull ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
+          
+          # Start containers
+          docker-compose -f docker-compose.prod.yml up -d
+          
+          # Clean up unused images
+          docker image prune -af || true
+          
+          # Show status
+          echo "=== Running Containers ==="
+          docker ps
+          
+          echo "=== Waiting for services to start ==="
+          sleep 20
+          
+          echo "=== Account Service Logs ==="
+          docker logs myrealpet-account --tail=30
+          
+          echo "=== Pet-Walk Service Logs ==="
+          docker logs myrealpet-petwalk --tail=30
