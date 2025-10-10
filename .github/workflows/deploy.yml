@@ -51,72 +51,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Create docker-compose.yml with secrets
-        run: |
-          cat > docker-compose.prod.yml << 'EOF'
-          version: '3.8'
-
-          services:
-            account:
-              image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
-              container_name: myrealpet-account
-              ports:
-                - "8005:8005"
-              environment:
-                - SPRING_PROFILES_ACTIVE=prod
-                - ACCOUNT_PORT=8005
-                - ACCOUNT_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-                - ACCOUNT_DB_USERNAME=${{ secrets.DB_USERNAME }}
-                - ACCOUNT_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                - REDIS_HOST=localhost
-                - REDIS_PORT=6379
-                - REDIS_PASSWORD=
-                - CORS_ALLOWED_ORIGINS=*
-                - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
-                - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
-                - PORT=8005
-              restart: unless-stopped
-              networks:
-                - myrealpet-network
-
-            pet-walk:
-              image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
-              container_name: myrealpet-petwalk
-              ports:
-                - "8002:8002"
-              environment:
-                - SPRING_PROFILES_ACTIVE=prod
-                - PETWALK_PORT=8002
-                - PETWALK_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_petwalk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-                - PETWALK_DB_USERNAME=${{ secrets.DB_USERNAME }}
-                - PETWALK_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-                - REDIS_HOST=localhost
-                - REDIS_PORT=6379
-                - REDIS_PASSWORD=
-                - CORS_ALLOWED_ORIGINS=*
-                - KAKAO_API_KEY=${{ secrets.KAKAO_API_KEY }}
-                - PORT=8002
-              restart: unless-stopped
-              networks:
-                - myrealpet-network
-
-          networks:
-            myrealpet-network:
-              driver: bridge
-          EOF
-
-      - name: Copy docker-compose to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "docker-compose.prod.yml"
-          target: "/home/ec2-user/app"
-
       - name: Deploy on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -124,7 +58,62 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
+            # Create app directory
+            mkdir -p /home/ec2-user/app
             cd /home/ec2-user/app
+
+            # Create docker-compose file directly on EC2
+            cat > docker-compose.prod.yml << 'EOF'
+            version: '3.8'
+
+            services:
+              account:
+                image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
+                container_name: myrealpet-account
+                ports:
+                  - "8005:8005"
+                environment:
+                  - SPRING_PROFILES_ACTIVE=prod
+                  - ACCOUNT_PORT=8005
+                  - ACCOUNT_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+                  - ACCOUNT_DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - ACCOUNT_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - REDIS_HOST=localhost
+                  - REDIS_PORT=6379
+                  - REDIS_PASSWORD=
+                  - CORS_ALLOWED_ORIGINS=*
+                  - KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+                  - KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+                  - PORT=8005
+                restart: unless-stopped
+                networks:
+                  - myrealpet-network
+
+              pet-walk:
+                image: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
+                container_name: myrealpet-petwalk
+                ports:
+                  - "8002:8002"
+                environment:
+                  - SPRING_PROFILES_ACTIVE=prod
+                  - PETWALK_PORT=8002
+                  - PETWALK_DB_URL=jdbc:mysql://${{ secrets.DB_ENDPOINT }}:3306/myrealpet_petwalk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+                  - PETWALK_DB_USERNAME=${{ secrets.DB_USERNAME }}
+                  - PETWALK_DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                  - REDIS_HOST=localhost
+                  - REDIS_PORT=6379
+                  - REDIS_PASSWORD=
+                  - CORS_ALLOWED_ORIGINS=*
+                  - KAKAO_API_KEY=${{ secrets.KAKAO_API_KEY }}
+                  - PORT=8002
+                restart: unless-stopped
+                networks:
+                  - myrealpet-network
+
+            networks:
+              myrealpet-network:
+                driver: bridge
+            EOF
 
             # Stop existing containers
             docker-compose -f docker-compose.prod.yml down || true
