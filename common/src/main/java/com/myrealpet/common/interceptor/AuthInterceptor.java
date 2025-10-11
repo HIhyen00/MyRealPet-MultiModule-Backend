@@ -33,6 +33,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.warn("Missing or invalid Authorization header for URI: {}", uri);
+            addCorsHeaders(response, request);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Authorization header required\"}");
@@ -46,6 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         Map<String, Object> session = userSessionUtil.getSession(token);
         if (session == null) {
             log.warn("Invalid or expired session for URI: {}", uri);
+            addCorsHeaders(response, request);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
@@ -66,5 +68,19 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         log.debug("Authentication successful for userId: {}, username: {}, uri: {}", userId, username, uri);
         return true;
+    }
+
+    /**
+     * CORS 헤더 추가
+     */
+    private void addCorsHeaders(HttpServletResponse response, HttpServletRequest request) {
+        String origin = request.getHeader("Origin");
+        if (origin != null) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Headers", "*");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Max-Age", "3600");
+        }
     }
 }
