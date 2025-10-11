@@ -20,6 +20,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
+        String method = request.getMethod();
+
+        // OPTIONS 요청 (CORS preflight)은 항상 허용
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
 
         // 인증이 필요하지 않은 경로는 건너뛰기
         if (uri.startsWith("/api/user/session") ||
