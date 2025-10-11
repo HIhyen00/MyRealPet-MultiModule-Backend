@@ -16,7 +16,7 @@ services:
       - ACCOUNT_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
       - ACCOUNT_DB_USERNAME=${DB_USERNAME}
       - ACCOUNT_DB_PASSWORD=${DB_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST:-localhost}
+      - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
@@ -48,7 +48,7 @@ services:
       - PETWALK_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_walk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
       - PETWALK_DB_USERNAME=${DB_USERNAME}
       - PETWALK_DB_PASSWORD=${DB_PASSWORD}
-      - REDIS_HOST=${REDIS_HOST:-localhost}
+      - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
@@ -63,6 +63,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: myrealpet-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - myrealpet-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 networks:
   myrealpet-network:
