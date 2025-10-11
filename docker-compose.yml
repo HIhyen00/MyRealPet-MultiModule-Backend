@@ -45,7 +45,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - PETWALK_PORT=8002
-      - PETWALK_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_petwalk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+      - PETWALK_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_walk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
       - PETWALK_DB_USERNAME=${DB_USERNAME}
       - PETWALK_DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-localhost}
