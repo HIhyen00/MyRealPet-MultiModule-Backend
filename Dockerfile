@@ -1,5 +1,5 @@
 # Multi-stage build for MyRealPet MultiModule Backend
-# This Dockerfile can build both account and pet-walk services
+# This Dockerfile can build account, pet-walk, and sns services
 
 ARG SERVICE_NAME
 
