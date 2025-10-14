@@ -25,11 +25,12 @@ public class UserSessionUtil {
     /**
      * 세션 저장 (로그인 시 호출) - 토큰을 키로 사용
      */
-    public void saveSession(String token, Long userId, String username) {
+    public void saveSession(String token, Long userId, String username, String role) {
         try {
             Map<String, Object> sessionData = new HashMap<>();
             sessionData.put("userId", userId);
             sessionData.put("username", username);
+            sessionData.put("role", role);
             sessionData.put("loginTime", System.currentTimeMillis());
 
             String sessionJson = objectMapper.writeValueAsString(sessionData);

@@ -1,5 +1,6 @@
 package com.myrealpet.common.config;
 
+import com.myrealpet.common.interceptor.AdminInterceptor;
 import com.myrealpet.common.interceptor.AuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CommonWebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
+    private final AdminInterceptor adminInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -22,6 +24,11 @@ public class CommonWebConfig implements WebMvcConfigurer {
                         "/api/auth/**",           // 인증 관련 API 제외
                         "/api/user/session/**",  // 세션 조회 API 제외
                         "/actuator/**"           // 모니터링 API 제외
-                );
+                )
+                .order(1);
+
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/api/admin/**")
+                .order(2);
     }
 }

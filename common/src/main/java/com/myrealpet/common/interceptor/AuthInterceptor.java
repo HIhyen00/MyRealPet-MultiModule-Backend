@@ -32,6 +32,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             uri.startsWith("/api/auth") ||
             uri.startsWith("/api/kakao-maps") ||
             uri.startsWith("/actuator")) {
+
             return true;
         }
 
@@ -64,10 +65,12 @@ public class AuthInterceptor implements HandlerInterceptor {
         Object userIdObj = session.get("userId");
         Long userId = userIdObj instanceof Integer ? ((Integer) userIdObj).longValue() : (Long) userIdObj;
         String username = (String) session.get("username");
+        String role = (String) session.get("role");
 
         // 요청에 사용자 정보 저장 (컨트롤러에서 사용 가능)
         request.setAttribute("userId", userId);
         request.setAttribute("username", username);
+        request.setAttribute("role", role);
 
         // 세션 갱신 (매 요청마다 TTL 연장)
         userSessionUtil.refreshSession(token);
