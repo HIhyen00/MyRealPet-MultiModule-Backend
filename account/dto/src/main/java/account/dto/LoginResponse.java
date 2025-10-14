@@ -15,13 +15,15 @@ public class LoginResponse {
     private String accessToken;
     private Long userId;
     private String username;
+    private String role;
     private Duration expiresIn;
 
-    public static LoginResponse of(String accessToken, Long userId, String username, Duration expiresIn) {
+    public static LoginResponse of(String accessToken, Long userId, String username, String role, Duration expiresIn) {
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .userId(userId)
                 .username(username)
+                .role(role)
                 .expiresIn(expiresIn)
                 .build();
     }
