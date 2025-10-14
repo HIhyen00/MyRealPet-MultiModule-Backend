@@ -64,6 +64,41 @@ services:
       retries: 3
       start_period: 40s
 
+  sns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: sns
+    container_name: myrealpet-sns
+    ports:
+      - "8007:8007"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SNS_PORT=8007
+      - SNS_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_sns?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
+      - SNS_DB_USERNAME=${DB_USERNAME}
+      - SNS_DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
+      - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+      - PORT=8007
+    restart: unless-stopped
+    networks:
+      - myrealpet-network
+    depends_on:
+      - account
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8007/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   redis:
     image: redis:7-alpine
     container_name: myrealpet-redis
