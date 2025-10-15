@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+}
+
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // .env 파일 지원
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+    // MySQL 드라이버
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation((project(":qna:dto")))
+}
+
