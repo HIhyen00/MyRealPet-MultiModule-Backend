@@ -104,42 +104,21 @@ public class MedicalRecordService {
         List<TestItemDto> testItems = testItemRepository
                 .findByMedicalRecordIdAndIsDeletedFalse(recordId)
                 .stream()
-                .map(item -> TestItemDto.builder()
-                        .id(item.getId())
-                        .name(item.getName())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .amount(item.getAmount())
-                        .notes(item.getNotes())
-                        .build())
+                .map(item -> TestItemDto.of(item))
                 .collect(Collectors.toList());
 
         // 처치 내역 조회
         List<TreatmentItemDto> treatmentItems = treatmentItemRepository
                 .findByMedicalRecordIdAndIsDeletedFalse(recordId)
                 .stream()
-                .map(item -> TreatmentItemDto.builder()
-                        .id(item.getId())
-                        .name(item.getName())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .amount(item.getAmount())
-                        .notes(item.getNotes())
-                        .build())
+                .map(item -> TreatmentItemDto.of(item))
                 .collect(Collectors.toList());
 
         // 처방 내역 조회
         List<MedicationItemDto> medicationItems = medicationItemRepository
                 .findByMedicalRecordIdAndIsDeletedFalse(recordId)
                 .stream()
-                .map(item -> MedicationItemDto.builder()
-                        .id(item.getId())
-                        .name(item.getName())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .amount(item.getAmount())
-                        .notes(item.getNotes())
-                        .build())
+                .map(item -> MedicationItemDto.of(item))
                 .collect(Collectors.toList());
 
         FileInfoDto receiptFile = null;
@@ -159,24 +138,7 @@ public class MedicalRecordService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        return ReadMedicalRecordResponse.builder()
-                .id(record.getId())
-                .petId(record.getPetId())
-                .hospitalName(record.getHospitalName())
-                .hospitalNumber(record.getHospitalNumber())
-                .hospitalAddress(record.getHospitalAddress())
-                .visitDate(record.getVisitDate())
-                .totalAmount(record.getTotalAmount())
-                .vatAmount(record.getVatAmount())
-                .diagnosis(record.getDiagnosis())
-                .symptoms(record.getSymptoms())
-                .receiptFile(receiptFile)
-                .attachmentFiles(attachmentFiles)
-                .testItems(testItems)
-                .treatmentItems(treatmentItems)
-                .medicationItems(medicationItems)
-                .build();
-
+        return ReadMedicalRecordResponse.of(record, receiptFile, attachmentFiles, testItems, treatmentItems, medicationItems);
     }
 
     public void updateMedicalRecord(Long accountId, Long petId, Long recordId, UpdateMedicalRecordRequest request) {
@@ -373,8 +335,8 @@ public class MedicalRecordService {
         for(MedicationItemDto dto : newMedicationItems) {
             if (dto.getId() != null && existingMap.containsKey(dto.getId())) {
                 MedicationItem existing = existingMap.get(dto.getId());
-                existing.update(dto.getName(), dto.getQuantity(), dto.getUnitPrice(),
-                        dto.getAmount(), dto.getNotes());
+                existing.update(dto.getName(), dto.getQuantity(), dto.getUnitPrice(), dto.getAmount(),
+                        dto.getFrequency(), dto.getDays(), dto.getNotes());
                 medicationItemRepository.save(existing);
                 checkIds.add(existing.getId());
             } else {

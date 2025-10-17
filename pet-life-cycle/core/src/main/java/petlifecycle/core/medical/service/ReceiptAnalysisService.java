@@ -13,6 +13,9 @@ import petlifecycle.core.ai.service.OpenAIService;
 import petlifecycle.core.metadata.service.FileService;
 import petlifecycle.dto.metadata.entity.FileType;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.util.Base64;
 
 @Slf4j
@@ -54,7 +57,7 @@ public class ReceiptAnalysisService {
                 6. vatAmount: 부가세 (숫자만)
                 7. testItems: 검사 내역 배열 [{name, quantity, unitPrice, amount, notes}]
                 8. treatmentItems: 처치 내역 배열 [{name, quantity, unitPrice, amount, notes}]
-                9. medicationItems: 처방 내역 배열 [{name, quantity, unitPrice, amount, notes}]
+                9. medicationItems: 처방 내역 배열 [{name, quantity, unitPrice, amount, frequency, days, notes}]
 
                 ------------------------------------------------------------
                 **세부 규칙**
@@ -64,6 +67,9 @@ public class ReceiptAnalysisService {
                 - quantity가 있더라고 amount는 청구서에 표시된 그대로 사용
                 - unitPrice = amount / quantity로 자동 계산 (예시: "병리검사 8회 96,000원 → quantity:8, amount:96000, unitPrice:12000)
                 - quantity가 없으면 1로 표시
+                - frequency는 "복용 빈도수"임. 표시된 경우에만 추출
+                - days는 "처방 일수"임
+                - (예시: 내복약 - 1일 2회(특수), quantity:1 → name:내복약(특수), frequency:1일 2회, days:1)
                 - 날짜는 YYYY-MM-DD 형식으로 변환
                 - 병원명, 주소, 전화번호가 명확하지 않으면 null
                 - 항목 분류 기준:
@@ -91,7 +97,7 @@ public class ReceiptAnalysisService {
                     ],
                     "treatmentItems": [],
                     "medicationItems": [
-                        {"name": "귀 치료", "quantity": 1, "unitPrice": 12000, "amount": 12000, "notes": null}
+                        {"name": "귀 치료", "quantity": 1, "unitPrice": 12000, "amount": 12000, "notes": null, "frequency": null, "days": null}
                     ]
                 }
                 ------------------------------------------------------------

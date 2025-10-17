@@ -68,7 +68,7 @@ public class OpenAIService {
         Map<String, Object> requestBody = Map.of(
                 "model", openAIProperties.getModel(),
                 "messages", List.of(systemMessage, userMessage),
-                "max_tokens", 2048,
+                "max_tokens", 1024,
                 "temperature", 0.2
         );
 
