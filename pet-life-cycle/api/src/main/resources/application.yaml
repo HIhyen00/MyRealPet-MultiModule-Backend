@@ -76,3 +76,9 @@ app:
     interceptor:
       enabled: true
 
+# Logging
+logging:
+  level:
+    petlifecycle: ${LOG_LEVEL:DEBUG}
+    com.myrealpet: ${LOG_LEVEL:DEBUG}
+

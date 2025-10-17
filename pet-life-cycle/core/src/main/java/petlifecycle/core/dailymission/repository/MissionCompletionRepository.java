@@ -16,4 +16,7 @@ public interface MissionCompletionRepository extends JpaRepository<MissionComple
 
     // 특정 날짜에 특정 미션을 완료했는지 확인하기 위한 쿼리
     Optional<MissionCompletion> findByUserIdAndDailyMissionIdAndCompletedDate(Long userId, Long dailyMissionId, LocalDate completedDate);
+
+    // 특정 유저의 전체 미션 완료 횟수 조회를 위한 쿼리
+    long countByUserId(Long userId);
 }

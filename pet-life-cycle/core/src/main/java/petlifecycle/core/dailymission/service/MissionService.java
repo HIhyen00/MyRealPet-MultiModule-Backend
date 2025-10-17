@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import petlifecycle.client.dailymission.response.DailyMissionResponse;
 import petlifecycle.client.dailymission.response.MissionCompletionResponse;
+import petlifecycle.client.dailymission.response.MissionStatsResponse;
 import petlifecycle.core.dailymission.repository.MasterDailyMissionRepository;
 import petlifecycle.core.dailymission.repository.MissionCompletionRepository;
 import petlifecycle.dto.dailymission.entity.DailyMission;
@@ -60,6 +61,11 @@ public class MissionService {
         return missionCompletionRepository.findAllByUserIdAndCompletedDateBetween(userId, startDate, endDate).stream()
                 .map(MissionCompletionResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public MissionStatsResponse getMissionStats(Long userId) {
+        long totalCompletions = missionCompletionRepository.countByUserId(userId);
+        return new MissionStatsResponse(totalCompletions);
     }
 }
 

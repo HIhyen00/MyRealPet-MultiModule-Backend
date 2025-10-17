@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: walk-service
+    name: pet-life-cycle-admin
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   config:
