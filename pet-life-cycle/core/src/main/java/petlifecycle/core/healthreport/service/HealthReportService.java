@@ -1,6 +1,9 @@
 package petlifecycle.core.healthreport.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import petlifecycle.client.healthreport.request.CreateHealthReportRequest;
 import petlifecycle.client.healthreport.response.AiResponse;
@@ -12,10 +15,12 @@ import petlifecycle.core.pet.service.PetAccountService;
 import petlifecycle.dto.healthreport.entity.HealthReport;
 import petlifecycle.dto.pet.entity.PetAccount;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HealthReportService {
 
+    private final ObjectMapper objectMapper;
     private final OpenAIService openAIService;
     private final HealthReportRepository healthReportRepository;
     private final PetAccountRepository petAccountRepository;
@@ -26,13 +31,19 @@ public class HealthReportService {
         PetAccount petAccount = petAccountRepository.findById(petId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid pet ID: " + petId));
 
-        String prompt = createHealthReportPrompt(petAccount, request.getSurveyResult());
+        String surveyResultJson = convertToJson(request.getSurveyResult());
+        String prompt = createHealthReportPrompt(petAccount, surveyResultJson);
         String reportContent = openAIService.getChatResponse(prompt).block();
 
         HealthReport healthReport = new HealthReport(petAccount, reportContent);
         healthReportRepository.save(healthReport);
+        log.info("Health Report saved: id={}, reportContent={}",
+                healthReport.getId(),
+                reportContent);
+        HealthReportResponse response = HealthReportResponse.from(healthReport);
+        log.info("Response created: {}", response);
 
-        return HealthReportResponse.from(healthReport);
+        return response;
     }
 
     public AiResponse getAnswer(Long reportId, String question) {
@@ -55,5 +66,13 @@ public class HealthReportService {
         // Here you can create a more detailed prompt based on the pet's information and the survey result.
         return "Create a health report for my pet, " + petAccount.getName() + ".\n" +
                 "Here is the survey result:\n" + surveyResult;
+    }
+
+    private String convertToJson(CreateHealthReportRequest.SurveyResultDto dto) {
+        try {
+            return objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to convert survey result to JSON", e);
+        }
     }
 }
