@@ -79,7 +79,7 @@ app:
 # Logging
 logging:
   level:
-    petwalk: ${LOG_LEVEL:DEBUG}
-    com.myrealpet: ${LOG_LEVEL:DEBUG}
+    qna: ${LOG_LEVEL:INFO}
+    com.myrealpet: ${LOG_LEVEL:INFO}
 
 
