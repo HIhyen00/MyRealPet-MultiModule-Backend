@@ -32,6 +32,7 @@ public class QuestionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String sort
     ) {
+        if("ALL".equalsIgnoreCase(category)) category = null;
         return ResponseEntity.ok(questionService.list(category, sort, page, size));
     }
 

@@ -27,6 +27,7 @@ public record QuestionResponse(
         return QuestionResponse.builder()
                 .id(q.getId())
                 .title(q.getTitle())
+                .userId(q.getUserId())
                 .content(q.getContent())
                 .category(q.getCategory())
                 .status(q.getStatus())

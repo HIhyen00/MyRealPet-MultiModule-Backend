@@ -11,7 +11,7 @@ import qna.dto.questions.entity.QuestionStatus;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     Page<Question> findByStatus(QuestionStatus status, Pageable pageable);
-    Page<Question> findByStatusAndCategory(QuestionStatus status, String category, Pageable pageable);
+    Page<Question> findByStatusAndCategory(QuestionStatus status,String category,Pageable pageable);
 
     @Query("SELECT q FROM Question q JOIN q.stats s WHERE q.status = :status ORDER BY s.likeCount DESC")
     Page<Question> findByStatusOrderByLikeCountDesc(QuestionStatus status, Pageable pageable);
