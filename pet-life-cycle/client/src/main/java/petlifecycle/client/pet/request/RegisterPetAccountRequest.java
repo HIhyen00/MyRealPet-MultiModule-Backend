@@ -1,5 +1,6 @@
 package petlifecycle.client.pet.request;
 
+import petlifecycle.dto.breed.entity.Species;
 import petlifecycle.dto.pet.entity.PetAccount;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Setter
 public class RegisterPetAccountRequest {
     private String name;
+    private Species species;
     private Long mainBreedId;
     private String customMainBreedName;
     private Long subBreedId;
@@ -29,6 +31,7 @@ public class RegisterPetAccountRequest {
         return new PetAccount(
                 accountId,
                 name,
+                species,
                 mainBreedId,
                 customMainBreedName,
                 subBreedId,

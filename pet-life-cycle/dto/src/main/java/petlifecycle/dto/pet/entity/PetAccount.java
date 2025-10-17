@@ -1,5 +1,6 @@
 package petlifecycle.dto.pet.entity;
 
+import petlifecycle.dto.breed.entity.Species;
 import petlifecycle.dto.metadata.entity.MetaDataFile;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
@@ -26,6 +27,10 @@ public class PetAccount {
 
     @Column(nullable = false, length = 50)
     private String name;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Species species;
 
     private Long mainBreedId;
 
@@ -66,9 +71,10 @@ public class PetAccount {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
-    public PetAccount(Long accountId, String name, Long mainBreedId, String customMainBreedName, Long subBreedId, String gender, LocalDate birthday, Boolean isNeutered, Boolean hasMicrochip, Long registrationNum) {
+    public PetAccount(Long accountId, String name, Species species, Long mainBreedId, String customMainBreedName, Long subBreedId, String gender, LocalDate birthday, Boolean isNeutered, Boolean hasMicrochip, Long registrationNum) {
         this.accountId = accountId;
         this.name = name;
+        this.species = species;
         this.mainBreedId = mainBreedId;
         this.customMainBreedName = customMainBreedName;
         this.subBreedId = subBreedId;
