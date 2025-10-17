@@ -28,4 +28,15 @@ public class TreatmentItemDto {
                 this.notes
         );
     }
+
+    public static TreatmentItemDto of(TreatmentItem item) {
+        return new TreatmentItemDto().builder()
+                .id(item.getId())
+                .name(item.getName())
+                .quantity(item.getQuantity())
+                .unitPrice(item.getUnitPrice())
+                .amount(item.getAmount())
+                .notes(item.getNotes())
+                .build();
+    }
 }

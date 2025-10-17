@@ -16,6 +16,18 @@ PETWALK_DB_URL=jdbc:mysql://localhost:3306/myrealpet_walk?allowpublickeyretrieva
 PETWALK_DB_USERNAME=myrealpet
 PETWALK_DB_PASSWORD=roota123
 
+PETLIFECYCLE_DB_URL=jdbc:mysql://localhost:3306/myrealpet_lifecycle?allowpublickeyretrieval=true&usessl=false&serverTimezone=UTC
+PETLIFECYCLE_DB_USERNAME=myrealpet
+PETLIFECYCLE_DB_PASSWORD=roota123
+
+QNA_DB_URL=jdbc:mysql://localhost:3306/myrealpet_qna?allowpublickeyretrieval=true&usessl=false&serverTimezone=UTC
+QNA_DB_USERNAME=myrealpet
+QNA_DB_PASSWORD=roota123
+
+SNS_DB_URL=jdbc:mysql://localhost:3306/myrealpet_qna?allowpublickeyretrieval=true&usessl=false&serverTimezone=UTC
+SNS_DB_USERNAME=myrealpet
+SNS_DB_PASSWORD=roota123
+
 # Redis 설정 (세션 관리용)
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
@@ -28,6 +40,10 @@ KAKAO_CLIENT_ID=your-kakao-client-id
 # 서버 포트 설정
 ACCOUNT_PORT=8005
 PETWALK_PORT=8002
+PETLIFECYCLE_PORT=8003
+PETADMIN_PORT=8100
+QNA_PORT=8004
+SNS_PORT=8007
 
 # 기타 설정
 SPRING_PROFILES_ACTIVE=dev
@@ -42,9 +58,15 @@ MySQL에서 두 개의 데이터베이스를 생성하세요:
 ```sql
 CREATE DATABASE myrealpet_account;
 CREATE DATABASE myrealpet_walk;
+CREATE DATABASE myrealpet_lifecycle;
+CREATE DATABASE myrealpet_qna;
+CREATE DATABASE myrealpet_sns;
 CREATE USER 'myrealpet'@'localhost' IDENTIFIED BY 'roota123';
 GRANT ALL PRIVILEGES ON myrealpet_account.* TO 'myrealpet'@'localhost';
 GRANT ALL PRIVILEGES ON myrealpet_walk.* TO 'myrealpet'@'localhost';
+GRANT ALL PRIVILEGES ON myrealpet_lifecycle.* TO 'myrealpet'@'localhost';
+GRANT ALL PRIVILEGES ON myrealpet_qna.* TO 'myrealpet'@'localhost';
+GRANT ALL PRIVILEGES ON myrealpet_sns.* TO 'myrealpet'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
@@ -78,6 +100,22 @@ MyRealPet-MultiModule-Backend/
 │   └── dto/             # 데이터 전송 객체
 ├── pet-walk/            # 산책 및 지도 서비스
 │   ├── api/             # REST API 컨트롤러 (포트 8002)
+│   ├── client/          # 비즈니스 로직 구현
+│   ├── core/            # 도메인 모델 및 레포지토리
+│   └── dto/             # 데이터 전송 객체
+├── pet-life-cycle/      # 펫 관리 서비스
+│   ├── adminApi/        # REST API 컨트롤러 (포트 8100) 
+│   ├── api/             # REST API 컨트롤러 (포트 8003)
+│   ├── client/          # 비즈니스 로직 구현
+│   ├── core/            # 도메인 모델 및 레포지토리
+│   └── dto/             # 데이터 전송 객체
+├── qna/                 # QNA 서비스
+│   ├── api/             # REST API 컨트롤러 (포트 8004)
+│   ├── client/          # 비즈니스 로직 구현
+│   ├── core/            # 도메인 모델 및 레포지토리
+│   └── dto/             # 데이터 전송 객체
+├── sns/                 # SNS 서비스
+│   ├── api/             # REST API 컨트롤러 (포트 8007)
 │   ├── client/          # 비즈니스 로직 구현
 │   ├── core/            # 도메인 모델 및 레포지토리
 │   └── dto/             # 데이터 전송 객체
@@ -126,6 +164,87 @@ GET  /api/auth/me           # 현재 사용자 정보
 
 ```
 GET /api/kakao-maps/search  # 카카오 지도 키워드 검색
+```
+
+### Pet-Life-Cycle Service (포트 8003)
+
+```
+
+POST   /api/pets/files/upload
+DELETE /api/pets/files/{fileId}
+
+GET    /api/pets/breeds/dropdown
+
+POST   /api/pets/profiles
+GET    /api/pets/profiles
+GET    /api/pets/profiles/{petId}
+PUT    /api/pets/profiles/{petId}
+DELETE /api/pets/profiles/{petId}
+
+GET    /api/pets/vaccines/{species}
+
+POST   /api/pets/{petId}/vac-records
+GET    /api/pets/{petId}/vac-records
+GET    /api/pets/{petId}/vac-records/{recordId}
+PUT    /api/pets/{petId}/vac-records/{recordId}
+DELETE /api/pets/{petId}/vac-records/{recordId}
+
+POST   /api/pets/{petId}/medical-records/analyze-receipt
+POST   /api/pets/{petId}/medical-records
+GET    /api/pets/{petId}/medical-records
+GET    /api/pets/{petId}/medical-records/{recordId}
+PUT    /api/pets/{petId}/medical-records/{recordId}
+DELETE /api/pets/{petId}/medical-records/{recordId}
+
+POST   /api/pets/{petId}/weights
+GET    /api/pets/{petId}/weights
+
+POST   /api/pets/{petId}/cycles
+GET    /api/pets/{petId}/cycles 
+DELETE /api/pets/{petId}/cycles/{cycleId}
+
+POST   /api/pets/{petId}/health-notes
+GET    /api/pets/{petId}/health-notes
+
+POST   /api/pets/{petId}/health-reports
+POST   /api/pets/{petId}/health-reports/{reportId}/ask-ai
+
+GET    /api/users/missions
+GET    /api/users/{userId}/missions/history
+POST   /api/users/{userId}/missions/{missionId}/completions      
+DELETE /api/users/{userId}/missions/{missionId}/completions
+
+POST   /api/pets/{petId}/daily-missions
+GET    /api/pets/{petId}/daily-missions
+PUT    /api/pets/{missionId}/complete
+```
+
+### Pet-Admin Service (포트 8100)
+
+```
+POST   /api/admin/pets/vaccines
+GET    /api/admin/pets/vaccines
+GET    /api/admin/pets/vaccines/{vaccineId}
+PUT    /api/admin/pets/vaccines/{vaccineId}
+DELETE /api/admin/pets/vaccines/{vaccineId}
+
+POST   /api/admin/pets/breeds
+GET    /api/admin/pets/breeds
+GET    /api/admin/pets/breeds/{breedId}
+PUT    /api/admin/pets/breeds/{breedId}
+DELETE /api/admin/pets/breeds/{breedId}
+```
+
+### QnA Service (포트 8004)
+
+```
+
+```
+
+### SNS Service (포트 8007)
+
+```
+
 ```
 
 ## 🛠️ 개발 가이드

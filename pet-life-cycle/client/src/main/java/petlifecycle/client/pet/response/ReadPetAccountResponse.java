@@ -36,7 +36,7 @@ public class ReadPetAccountResponse {
         return ReadPetAccountResponse.builder()
                 .petId(petAccount.getPetId())
                 .name(petAccount.getName())
-                .species(mainBreed != null ? mainBreed.getSpecies() : Species.OTHER)
+                .species(petAccount.getSpecies())
                 .mainBreedId(mainBreed != null ? mainBreed.getId() : null)
                 .mainBreedName(mainBreed != null ? mainBreed.getName() : null)
                 .customMainBreedName(petAccount.getCustomMainBreedName())

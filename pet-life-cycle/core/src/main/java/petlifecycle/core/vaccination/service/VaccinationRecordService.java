@@ -46,26 +46,19 @@ public class VaccinationRecordService {
         petAccountService.validateAndGetPetAccount(petId, accountId);
         VaccinationRecord vacRecord = vaccinationRecordRepository.findByIdAndIsDeletedFalse(recordId)
                 .orElseThrow(() -> new RuntimeException("접종 이력을 찾을 수 없습니다."));
-        String vaccineName = null;
         if (vacRecord.getVaccineId() != null) {
             Vaccine vaccine = vaccineRepository.findById(vacRecord.getVaccineId())
                     .orElseThrow(() -> new RuntimeException("백신 정보를 찾는데 실패했습니다."));
-            vaccineName = vaccine.getVaccineName();
+            return ReadVacRecordResponse.from(vacRecord, vaccine.getVaccineName());
         } else {
-            vaccineName = vacRecord.getCustomVaccineName();
+            return ReadVacRecordResponse.from(vacRecord, vacRecord.getCustomVaccineName());
         }
-        return ReadVacRecordResponse.from(vacRecord, vaccineName);
     }
 
     public ListVacRecordResponse listVacRecords(Long accountId, Long petId) {
         PetAccount petAccount = petAccountService.validateAndGetPetAccount(petId, accountId);
-        Breed breed = breedRepository.findByIdAndIsDeletedFalse(petAccount.getMainBreedId())
-                .orElse(null);
 
-        List<Vaccine> vaccines = new ArrayList<>();
-        if (breed != null) {
-            vaccines = vaccineRepository.findBySpeciesAndIsDeletedFalseOrderByVaccineIdAsc(breed.getSpecies());
-        }
+        List<Vaccine> vaccines = vaccineRepository.findBySpeciesAndIsDeletedFalseOrderByVaccineIdAsc(petAccount.getSpecies());
         List<VaccinationRecord> vacRecs = vaccinationRecordRepository.findByPetIdAndIsDeletedFalseOrderByVaccinationDateDesc(petId);
 
         // 등록된 백신 접종 기록

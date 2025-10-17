@@ -7,6 +7,7 @@ import petlifecycle.client.medical.dto.TreatmentItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import petlifecycle.dto.medical.entity.MedicalRecord;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,4 +41,28 @@ public class ReadMedicalRecordResponse {
     private final List<TestItemDto> testItems;
     private final List<TreatmentItemDto> treatmentItems;
     private final List<MedicationItemDto> medicationItems;
+
+    public static ReadMedicalRecordResponse of(MedicalRecord record, FileInfoDto receiptFile,
+                                               List<FileInfoDto> attachmentFiles, List<TestItemDto> testItems,
+                                               List<TreatmentItemDto> treatmentItems, List<MedicationItemDto> medicationItems) {
+
+        return ReadMedicalRecordResponse.builder()
+                .id(record.getId())
+                .petId(record.getPetId())
+                .hospitalName(record.getHospitalName())
+                .hospitalNumber(record.getHospitalNumber())
+                .hospitalAddress(record.getHospitalAddress())
+                .visitDate(record.getVisitDate())
+                .totalAmount(record.getTotalAmount())
+                .vatAmount(record.getVatAmount())
+                .diagnosis(record.getDiagnosis())
+                .symptoms(record.getSymptoms())
+                .receiptFile(receiptFile)
+                .attachmentFiles(attachmentFiles)
+                .testItems(testItems)
+                .treatmentItems(treatmentItems)
+                .medicationItems(medicationItems)
+                .build();
+    }
+
 }

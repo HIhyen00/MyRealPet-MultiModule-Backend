@@ -1,5 +1,6 @@
 package petlifecycle.core.pet.service;
 
+import org.springframework.util.StringUtils;
 import petlifecycle.client.metadata.response.FileUploadResponse;
 import petlifecycle.client.pet.request.RegisterPetAccountRequest;
 import petlifecycle.client.pet.request.UpdatePetAccountRequest;
@@ -8,6 +9,7 @@ import petlifecycle.core.breed.repository.BreedRepository;
 import petlifecycle.core.metadata.service.FileService;
 import petlifecycle.core.pet.repository.PetAccountRepository;
 import petlifecycle.dto.breed.entity.Breed;
+import petlifecycle.dto.breed.entity.Species;
 import petlifecycle.dto.metadata.entity.AccessType;
 import petlifecycle.dto.metadata.entity.FileType;
 import petlifecycle.dto.metadata.entity.MetaDataFile;
@@ -18,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,7 +36,7 @@ public class PetAccountService {
 
     public RegisterPetAccountResponse registerPetAccount(Long accountId, RegisterPetAccountRequest request) {
 
-        validateBreedConstraints(request.getMainBreedId(),request.getCustomMainBreedName(), request.getSubBreedId());
+        validateBreedConstraints(request.getSpecies(), request.getMainBreedId(),request.getCustomMainBreedName(), request.getSubBreedId());
 
         PetAccount petAccount = request.toPetAccount(accountId);
         PetAccount savedPet = petAccountRepository.save(petAccount);
@@ -231,9 +230,11 @@ public class PetAccountService {
         return petAccount;
     }
 
-    private void validateMainBreed(Long mainBreedId) {
-        if (!breedRepository.existsByIdAndIsDeletedFalse(mainBreedId)) {
-            throw new RuntimeException("메인 품종을 찾을 수 없습니다.");
+    private void validateMainBreed(Species species, Long mainBreedId) {
+        Breed mainBreed = breedRepository.findById(mainBreedId)
+                .orElseThrow(() -> new RuntimeException("메인 품종을 찾을 수 없습니다."));
+        if (!species.equals(mainBreed.getSpecies())) {
+            throw new RuntimeException("펫의 종에 해당하는 품종이 아닙니다.");
         }
     }
 
@@ -245,7 +246,7 @@ public class PetAccountService {
             throw new RuntimeException("메인 품종과 같은 서브 품종을 입력할 수 없습니다.");
         }
         Breed mainBreed = breedRepository.findByIdAndIsDeletedFalse(mainBreedId)
-                .orElseThrow(() -> new RuntimeException("서브 품종을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("메인 품종을 찾을 수 없습니다."));
         Breed subBreed = breedRepository.findByIdAndIsDeletedFalse(subBreedId)
                 .orElseThrow(() -> new RuntimeException("서브 품종을 찾을 수 없습니다."));
         if (!subBreed.getSpecies().equals(mainBreed.getSpecies())) {
@@ -254,33 +255,33 @@ public class PetAccountService {
 
     }
 
-    private void validateBreedConstraints(Long mainBreedId, String customMainBreedName, Long subBreedId) {
+    private void validateBreedConstraints(Species species, Long mainBreedId, String customMainBreedName, Long subBreedId) {
         boolean hasMain = (mainBreedId != null);
-        boolean hasCustom = (customMainBreedName != null && !customMainBreedName.trim().isEmpty());
+        boolean hasCustom = (!StringUtils.isEmpty(customMainBreedName));
 
-        if (!hasMain && !hasCustom) {
-            throw new RuntimeException("품종 정보를 입력해주세요.");
+        if (hasMain) {
+            if (hasCustom) {
+                throw new RuntimeException("메인 품종과 커스텀 품종은 동시에 설정할 수 없습니다.");
+            }
+            validateMainBreed(species, mainBreedId);
+            if (subBreedId != null) validateSubBreed(subBreedId, mainBreedId);
+        } else {
+            if (!hasCustom) throw new RuntimeException("품종 정보를 입력해주세요.");
         }
-        if (hasMain && hasCustom) {
-            throw new RuntimeException("메인 품종과 커스텀 품종은 동시에 설정할 수 없습니다.");
-        }
-
-        if (hasMain) validateMainBreed(mainBreedId);
-        if (subBreedId != null && hasMain) validateSubBreed(subBreedId, mainBreedId);
     }
 
     private void validateBreedUpdateConstraints(PetAccount petAccount, UpdatePetAccountRequest request) {
         Long currentMain = petAccount.getMainBreedId();
         Long requestedMain = request.getMainBreedId();
         String requestedCustom = request.getCustomMainBreedName();
-        Boolean hasRequestedCustom = requestedCustom != null && !requestedCustom.trim().isEmpty();
+        Boolean hasRequestedCustom = !StringUtils.isEmpty(requestedCustom);
 
         if (currentMain == null) {
             if ((requestedMain == null) && !hasRequestedCustom) {
                 throw new RuntimeException("품종 정보를 입력해주세요.");
             }
             if (requestedMain != null) {
-                validateMainBreed(requestedMain);
+                validateMainBreed(petAccount.getSpecies(), requestedMain);
                 petAccount.setMainBreedId(requestedMain);
                 petAccount.setCustomMainBreedName(null);
             } else if (hasRequestedCustom) {
@@ -292,7 +293,7 @@ public class PetAccountService {
                     throw new RuntimeException("커스텀 품종은 메인 품종과 동시에 설정할 수 없습니다.");
                 }
                 if (!currentMain.equals(requestedMain)) {
-                    validateMainBreed(requestedMain);
+                    validateMainBreed(petAccount.getSpecies(), requestedMain);
                     petAccount.setMainBreedId(requestedMain);
                 }
                 petAccount.setCustomMainBreedName(null);

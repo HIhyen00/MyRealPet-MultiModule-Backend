@@ -28,4 +28,15 @@ public class TestItemDto {
                 this.notes
         );
     }
+
+    public static TestItemDto of(TestItem item) {
+        return new TestItemDto().builder()
+                .id(item.getId())
+                .name(item.getName())
+                .quantity(item.getQuantity())
+                .unitPrice(item.getUnitPrice())
+                .amount(item.getAmount())
+                .notes(item.getNotes())
+                .build();
+    }
 }

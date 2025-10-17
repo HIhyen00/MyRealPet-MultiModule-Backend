@@ -24,6 +24,8 @@ public class MedicationItem {
     private Integer quantity;
     private Integer unitPrice;
     private Integer amount;
+    private String frequency;
+    private Integer days;
     private String notes;
 
     @Column(nullable = false)
@@ -32,21 +34,25 @@ public class MedicationItem {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public MedicationItem(Long medicalRecordId, String name, Integer quantity,
-                          Integer unitPrice, Integer amount, String notes) {
+    public MedicationItem(Long medicalRecordId, String name, Integer quantity, Integer unitPrice,
+                          Integer amount, String frequency, Integer days, String notes) {
         this.medicalRecordId = medicalRecordId;
         this.name = name;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
         this.amount = amount;
+        this.frequency = frequency;
+        this.days = days;
         this.notes = notes;
     }
 
-    public void update(String name, Integer quantity, Integer unitPrice, Integer amount, String notes) {
+    public void update(String name, Integer quantity, Integer unitPrice, Integer amount, String frequency, Integer days, String notes) {
         this.name = name;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
         this.amount = amount;
+        this.frequency = frequency;
+        this.days = days;
         this.notes = notes;
     }
 

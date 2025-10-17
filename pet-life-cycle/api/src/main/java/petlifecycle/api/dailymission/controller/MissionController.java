@@ -5,13 +5,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import petlifecycle.client.dailymission.response.DailyMissionResponse;
 import petlifecycle.client.dailymission.response.MissionCompletionResponse;
+import petlifecycle.client.dailymission.response.MissionStatsResponse;
 import petlifecycle.core.dailymission.service.MissionService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class MissionController {
 
     private final MissionService missionService;
@@ -24,7 +25,7 @@ public class MissionController {
     }
 
     // 2. 특정 유저의 월별 미션 완료 기록 조회
-    @GetMapping("/users/{userId}/missions/history")
+    @GetMapping("/{userId}/missions/history")
     public ResponseEntity<List<MissionCompletionResponse>> getMissionHistory(
             @RequestAttribute("userId") Long userId,
             @RequestParam int year,
@@ -34,16 +35,23 @@ public class MissionController {
     }
 
     // 3. 미션 완료 처리
-    @PostMapping("/users/{userId}/missions/{missionId}/completions")
+    @PostMapping("/{userId}/missions/{missionId}/completions")
     public ResponseEntity<Void> completeMission(@RequestAttribute("userId") Long userId, @PathVariable Long missionId) {
         missionService.completeMission(userId, missionId);
         return ResponseEntity.ok().build();
     }
 
     // 4. 미션 완료 취소
-    @DeleteMapping("/users/{userId}/missions/{missionId}/completions")
+    @DeleteMapping("/{userId}/missions/{missionId}/completions")
     public ResponseEntity<Void> cancelMissionCompletion(@RequestAttribute("userId") Long userId, @PathVariable Long missionId) {
         missionService.cancelMissionCompletion(userId, missionId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 5. 특정 유저의 미션 통계 조회
+    @GetMapping("/{userId}/missions/stats")
+    public ResponseEntity<MissionStatsResponse> getMissionStats(@PathVariable Long userId) {
+        MissionStatsResponse stats = missionService.getMissionStats(userId);
+        return ResponseEntity.ok(stats);
     }
 }
