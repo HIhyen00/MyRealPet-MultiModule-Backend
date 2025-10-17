@@ -56,10 +56,17 @@ public class QuestionController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/stats")
-    public ResponseEntity<Void> updateStats(@PathVariable Long id,
-                                            @RequestParam String type) {
-        questionService.updateStats(id, type);
+    // 조회수 증가
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> increaseView(@PathVariable Long id) {
+        questionService.updateStats(id, "view");
+        return ResponseEntity.ok().build();
+    }
+
+    // 좋아요 증가
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Void> increaseLike(@PathVariable Long id) {
+        questionService.updateStats(id, "like");
         return ResponseEntity.ok().build();
     }
 }
