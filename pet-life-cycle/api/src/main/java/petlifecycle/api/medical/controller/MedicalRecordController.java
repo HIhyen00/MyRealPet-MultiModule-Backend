@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import petlifecycle.client.medical.request.ListMedicalRecordRequest;
 import petlifecycle.client.medical.request.RegisterMedicalRecordRequest;
 import petlifecycle.client.medical.request.UpdateMedicalRecordRequest;
 import petlifecycle.client.medical.response.ListMedicalRecordResponse;
@@ -39,10 +38,11 @@ public class MedicalRecordController {
 
     @GetMapping
     public ResponseEntity<ListMedicalRecordResponse> listMedicalRecord(@PathVariable("petId") Long petId,
-                                                                       @ModelAttribute ListMedicalRecordRequest request,
+                                                                       @RequestParam(defaultValue = "1") int page,
+                                                                       @RequestParam(defaultValue = "10") int perPage,
                                                                        @RequestAttribute("userId") Long userId) {
         try {
-            ListMedicalRecordResponse response = medicalRecordService.listMedicalRecord(userId, petId, request);
+            ListMedicalRecordResponse response = medicalRecordService.listMedicalRecord(userId, petId, page, perPage);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("진료기록 목록 조회 실패: {}", e.getMessage());

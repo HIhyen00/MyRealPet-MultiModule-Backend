@@ -11,7 +11,6 @@ import petlifecycle.client.medical.dto.FileInfoDto;
 import petlifecycle.client.medical.dto.MedicationItemDto;
 import petlifecycle.client.medical.dto.TestItemDto;
 import petlifecycle.client.medical.dto.TreatmentItemDto;
-import petlifecycle.client.medical.request.ListMedicalRecordRequest;
 import petlifecycle.client.medical.request.RegisterMedicalRecordRequest;
 import petlifecycle.client.medical.request.UpdateMedicalRecordRequest;
 import petlifecycle.client.medical.response.ListMedicalRecordResponse;
@@ -77,13 +76,13 @@ public class MedicalRecordService {
         log.info("진료기록 등록 완료: recordId={}, petId={}, accountId={}", medicalRecordId, petId, accountId);
     }
 
-    public ListMedicalRecordResponse listMedicalRecord(Long accountId, Long petId, ListMedicalRecordRequest request) {
+    public ListMedicalRecordResponse listMedicalRecord(Long accountId, Long petId, int page, int perPage) {
         petAccountService.validateAndGetPetAccount(petId, accountId);
 
-        int page = request.getPage() > 0 ? request.getPage() - 1 : 0;  // 0-based page index
-        int perPage = request.getPerPage() > 0 ? request.getPerPage() : 10;
+        int pageIndex  = page > 0 ? page - 1 : 0;  // 0-based page index
+        int size = perPage > 0 ? perPage : 10;
 
-        Pageable pageable = PageRequest.of(page, perPage);
+        Pageable pageable = PageRequest.of(pageIndex , size);
         Page<MedicalRecord> paginatedRecordList = medicalRecordRepository.findByPetIdAndIsDeletedFalseOrderByVisitDateDesc(petId, pageable);
 
         List<MedicalRecord> medicalRecordList = paginatedRecordList.getContent();
