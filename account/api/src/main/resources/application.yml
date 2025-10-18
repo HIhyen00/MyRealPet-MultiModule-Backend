@@ -6,12 +6,22 @@ spring:
     name: account-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:file:../../.env[.properties]
+
+  # S3 비활성화 (account 모듈은 S3 사용 안 함)
+  cloud:
+    aws:
+      s3:
+        enabled: false
+      region:
+        static: ap-southeast-2  # S3 미사용이지만 자동설정 오류 방지용
 
   # MySQL Database Configuration
   datasource:
-    url: ${ACCOUNT_DB_URL}
-    username: ${ACCOUNT_DB_USERNAME}
-    password: ${ACCOUNT_DB_PASSWORD}
+    url: ${ACCOUNT_DB_URL:jdbc:mysql://localhost:3306/myrealpet_account?allowpublickeyretrieval=true&usessl=false&serverTimezone=UTC}
+    username: ${ACCOUNT_DB_USERNAME:myrealpet}
+    password: ${ACCOUNT_DB_PASSWORD:roota123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   # JPA Configuration
@@ -32,7 +42,13 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD:eddi@123}
+      client-type: lettuce
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
 
   # Kakao OAuth2 Configuration
   security:
@@ -40,8 +56,8 @@ spring:
       client:
         registration:
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-id: ${KAKAO_CLIENT_ID:b13b870fc64e2bf406d277998c043ba2}
+            redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8005/login/oauth2/code/kakao}
             authorization-grant-type: authorization_code
             scope: profile_nickname, account_email
             client-name: Kakao
@@ -55,7 +71,7 @@ spring:
 # Application Configuration
 app:
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS
     allowed-headers: "*"
     allow-credentials: true

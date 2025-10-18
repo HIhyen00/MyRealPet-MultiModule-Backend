@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.auth.interceptor.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "app.auth.interceptor.enabled", havingValue = "true", matchIfMissing = true)
 public class CommonWebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;

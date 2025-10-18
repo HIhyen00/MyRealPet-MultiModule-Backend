@@ -6,6 +6,16 @@ spring:
     name: walk-service
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:file:../../.env[.properties]
+
+  # S3 비활성화 (pet-walk 모듈은 S3 사용 안 함)
+  cloud:
+    aws:
+      s3:
+        enabled: false
+      region:
+        static: ap-southeast-2  # S3 미사용이지만 자동설정 오류 방지용
 
   # MySQL Database Configuration
   datasource:

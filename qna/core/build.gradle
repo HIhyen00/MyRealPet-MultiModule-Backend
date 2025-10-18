@@ -1,6 +1,5 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot'
+    id 'java-library'
 }
 
 dependencies {
@@ -16,16 +15,10 @@ dependencies {
     // MySQL 드라이버
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // AWS S3, METADATA
-    implementation platform("software.amazon.awssdk:bom:2.25.1")
-    implementation "software.amazon.awssdk:s3"
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.0.3'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
 
+    implementation(project(":common"))
     implementation(project(":qna:client"))
     implementation(project(":qna:dto"))
 }

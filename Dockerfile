@@ -1,5 +1,5 @@
 # Multi-stage build for MyRealPet MultiModule Backend
-# This Dockerfile can build account, pet-walk, and sns services
+# This Dockerfile can build all microservices: account, pet-walk, sns, pet-life-cycle, qna, and pet-life-cycle-admin
 
 ARG SERVICE_NAME
 
@@ -13,8 +13,16 @@ WORKDIR /app
 COPY . .
 
 # Grant execute permission and build the specific service
+# Handles both regular api and adminApi modules
 RUN chmod +x ./gradlew && \
-    ./gradlew :${SERVICE_NAME}:api:bootJar --no-daemon
+    if echo "${SERVICE_NAME}" | grep -q "/"; then \
+        MODULE_PATH=$(echo ${SERVICE_NAME} | sed 's/\//:/g'); \
+        echo "Building module with path: ${MODULE_PATH}"; \
+        ./gradlew :${MODULE_PATH}:bootJar --no-daemon; \
+    else \
+        echo "Building standard api module: ${SERVICE_NAME}:api"; \
+        ./gradlew :${SERVICE_NAME}:api:bootJar --no-daemon; \
+    fi
 
 # Runtime stage
 FROM amazoncorretto:17-alpine
@@ -23,7 +31,8 @@ ARG SERVICE_NAME
 WORKDIR /app
 
 # Copy the built jar from builder stage
-COPY --from=builder /app/${SERVICE_NAME}/api/build/libs/*.jar app.jar
+# Handles both regular api and adminApi modules
+COPY --from=builder /app/${SERVICE_NAME}/**/build/libs/*.jar app.jar
 
 # Add healthcheck (port will be configured in docker-compose)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \

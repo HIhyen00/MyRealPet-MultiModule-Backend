@@ -1,6 +1,5 @@
 plugins {
-    id 'java'
-    id 'org.springframework.boot'
+    id 'java-library'
 }
 
 
@@ -17,7 +16,6 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation((project(":qna:dto")))

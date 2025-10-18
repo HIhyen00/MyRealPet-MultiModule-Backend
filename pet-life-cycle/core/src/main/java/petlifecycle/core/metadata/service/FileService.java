@@ -1,5 +1,6 @@
 package petlifecycle.core.metadata.service;
 
+import com.myrealpet.common.s3.S3Service;
 import petlifecycle.core.metadata.repository.MetaDataFileRepository;
 import petlifecycle.dto.metadata.entity.AccessType;
 import petlifecycle.dto.metadata.entity.FileType;

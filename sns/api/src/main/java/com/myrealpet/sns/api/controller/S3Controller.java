@@ -1,7 +1,7 @@
 package com.myrealpet.sns.api.controller;
 
-import com.myrealpet.sns.core.s3.S3PresignedUrlDto;
-import com.myrealpet.sns.core.s3.S3Service;
+import com.myrealpet.common.s3.S3PresignedUrlDto;
+import com.myrealpet.common.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ public class S3Controller {
             }
             
             String dirName = "sns/" + folder;
-            String imageUrl = s3Service.uploadFile(file, dirName);
+            String imageUrl = s3Service.uploadFileToDirectory(file, dirName);
             
             log.info("이미지 업로드 성공 - URL: {}", imageUrl);
             
@@ -42,7 +42,7 @@ public class S3Controller {
             response.put("imageUrl", imageUrl);
             
             return ResponseEntity.ok(response);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("이미지 업로드 오류: {}", e.getMessage(), e);
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "이미지 업로드 중 오류가 발생했습니다.");

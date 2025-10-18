@@ -1,4 +1,4 @@
-package com.myrealpet.sns.core.s3;
+package com.myrealpet.common.s3;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
