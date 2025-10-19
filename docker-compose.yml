@@ -11,11 +11,11 @@ services:
     ports:
       - "8005:8005"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - ACCOUNT_PORT=8005
-      - ACCOUNT_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_account?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - ACCOUNT_DB_USERNAME=${DB_USERNAME}
-      - ACCOUNT_DB_PASSWORD=${DB_PASSWORD}
+      - ACCOUNT_DB_URL=${ACCOUNT_DB_URL}
+      - ACCOUNT_DB_USERNAME=${ACCOUNT_DB_USERNAME}
+      - ACCOUNT_DB_PASSWORD=${ACCOUNT_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -43,11 +43,11 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - PETWALK_PORT=8002
-      - PETWALK_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_walk?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - PETWALK_DB_USERNAME=${DB_USERNAME}
-      - PETWALK_DB_PASSWORD=${DB_PASSWORD}
+      - PETWALK_DB_URL=${PETWALK_DB_URL}
+      - PETWALK_DB_USERNAME=${PETWALK_DB_USERNAME}
+      - PETWALK_DB_PASSWORD=${PETWALK_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -74,26 +74,25 @@ services:
     ports:
       - "8007:8007"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - SNS_PORT=8007
-      - SNS_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_sns?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - SNS_DB_USERNAME=${DB_USERNAME}
-      - SNS_DB_PASSWORD=${DB_PASSWORD}
+      - SNS_DB_URL=${SNS_DB_URL}
+      - SNS_DB_USERNAME=${SNS_DB_USERNAME}
+      - SNS_DB_PASSWORD=${SNS_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
-      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${AWS_ACCESS_KEY}
-      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${AWS_SECRET_KEY}
-      - CLOUD_AWS_REGION=${AWS_REGION:-ap-northeast-2}
-      - CLOUD_AWS_S3_BUCKET=${AWS_S3_BUCKET:-myrealpet}
-      - CLOUD_AWS_S3_BASE_URL=${AWS_S3_BASE_URL}
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+      - CLOUD_AWS_REGION=${CLOUD_AWS_REGION:-ap-northeast-2}
+      - CLOUD_AWS_S3_BUCKET=${CLOUD_AWS_S3_BUCKET}
+      - CLOUD_AWS_S3_BASE_URL=${CLOUD_AWS_S3_BASE_URL}
       - PORT=8007
     restart: unless-stopped
     networks:
       - myrealpet-network
     depends_on:
-      - account
       - redis
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8007/actuator/health"]
@@ -112,20 +111,20 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - PETLIFECYCLE_PORT=8003
-      - PETLIFECYCLE_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_lifecycle?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - PETLIFECYCLE_DB_USERNAME=${DB_USERNAME}
-      - PETLIFECYCLE_DB_PASSWORD=${DB_PASSWORD}
+      - PETLIFECYCLE_DB_URL=${PETLIFECYCLE_DB_URL}
+      - PETLIFECYCLE_DB_USERNAME=${PETLIFECYCLE_DB_USERNAME}
+      - PETLIFECYCLE_DB_PASSWORD=${PETLIFECYCLE_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
-      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${AWS_ACCESS_KEY}
-      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${AWS_SECRET_KEY}
-      - CLOUD_AWS_REGION=${AWS_REGION:-ap-northeast-2}
-      - CLOUD_AWS_S3_BUCKET=${AWS_S3_BUCKET:-myrealpet}
-      - CLOUD_AWS_S3_BASE_URL=${AWS_S3_BASE_URL}
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+      - CLOUD_AWS_REGION=${CLOUD_AWS_REGION:-ap-northeast-2}
+      - CLOUD_AWS_S3_BUCKET=${CLOUD_AWS_S3_BUCKET}
+      - CLOUD_AWS_S3_BASE_URL=${CLOUD_AWS_S3_BASE_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
       - OPENAI_URL=${OPENAI_URL:-https://api.openai.com/v1/chat/completions}
@@ -147,25 +146,25 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: pet-life-cycle/adminApi
+        SERVICE_NAME: pet-life-cycle-admin
     container_name: myrealpet-petlifecycle-admin
     ports:
       - "8100:8100"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - PETADMIN_PORT=8100
-      - PETLIFECYCLE_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_lifecycle?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - PETLIFECYCLE_DB_USERNAME=${DB_USERNAME}
-      - PETLIFECYCLE_DB_PASSWORD=${DB_PASSWORD}
+      - PETLIFECYCLE_DB_URL=${PETLIFECYCLE_DB_URL}
+      - PETLIFECYCLE_DB_USERNAME=${PETLIFECYCLE_DB_USERNAME}
+      - PETLIFECYCLE_DB_PASSWORD=${PETLIFECYCLE_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-*}
-      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${AWS_ACCESS_KEY}
-      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${AWS_SECRET_KEY}
-      - CLOUD_AWS_REGION=${AWS_REGION:-ap-northeast-2}
-      - CLOUD_AWS_S3_BUCKET=${AWS_S3_BUCKET:-myrealpet}
-      - CLOUD_AWS_S3_BASE_URL=${AWS_S3_BASE_URL}
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+      - CLOUD_AWS_REGION=${CLOUD_AWS_REGION:-ap-northeast-2}
+      - CLOUD_AWS_S3_BUCKET=${CLOUD_AWS_S3_BUCKET}
+      - CLOUD_AWS_S3_BASE_URL=${CLOUD_AWS_S3_BASE_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
       - OPENAI_URL=${OPENAI_URL:-https://api.openai.com/v1/chat/completions}
@@ -192,11 +191,11 @@ services:
     ports:
       - "8004:8004"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - QNA_PORT=8004
-      - QNA_DB_URL=jdbc:mysql://${DB_ENDPOINT}:3306/myrealpet_qna?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=utf8
-      - QNA_DB_USERNAME=${DB_USERNAME}
-      - QNA_DB_PASSWORD=${DB_PASSWORD}
+      - QNA_DB_URL=${QNA_DB_URL}
+      - QNA_DB_USERNAME=${QNA_DB_USERNAME}
+      - QNA_DB_PASSWORD=${QNA_DB_PASSWORD}
       - REDIS_HOST=${REDIS_HOST:-redis}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
