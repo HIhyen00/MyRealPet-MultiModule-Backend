@@ -38,8 +38,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-account:latest
           build-args: |
             SERVICE_NAME=account
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-account:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-account:buildcache,mode=max
+          no-cache: true
 
   build-petwalk:
     runs-on: ubuntu-latest
@@ -73,8 +72,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:latest
           build-args: |
             SERVICE_NAME=pet-walk
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petwalk:buildcache,mode=max
+          no-cache: true
           
   build-sns:
     runs-on: ubuntu-latest
@@ -108,8 +106,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-sns:latest
           build-args: |
             SERVICE_NAME=sns
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-sns:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-sns:buildcache,mode=max
+          no-cache: true
 
   build-petlifecycle:
     runs-on: ubuntu-latest
@@ -143,8 +140,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle:latest
           build-args: |
             SERVICE_NAME=pet-life-cycle
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle:buildcache,mode=max
+          no-cache: true
 
   build-petlifecycle-admin:
     runs-on: ubuntu-latest
@@ -178,8 +174,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle-admin:latest
           build-args: |
             SERVICE_NAME=pet-life-cycle/adminApi
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle-admin:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-petlifecycle-admin:buildcache,mode=max
+          no-cache: true
 
   build-qna:
     runs-on: ubuntu-latest
@@ -213,8 +208,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/myrealpet-qna:latest
           build-args: |
             SERVICE_NAME=qna
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-qna:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/myrealpet-qna:buildcache,mode=max
+          no-cache: true
 
   deploy:
     needs: [build-account, build-petwalk, build-sns, build-petlifecycle, build-petlifecycle-admin, build-qna]
