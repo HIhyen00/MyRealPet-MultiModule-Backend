@@ -62,9 +62,7 @@ public class AnswerService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Answer> result = answerRepository.findByQuestionId(questionId, pageable);
         // DELETED 상태인 답변은 제외하고 반환
-        return result
-                .filter(a -> a.getStatus() != AnswerStatus.DELETED)
-                .map(AnswerResponse::of);
+        return result.map(AnswerResponse::of);
     }
 
     public void update(Long userId, Long answerId, AnswerUpdateRequest req) {
