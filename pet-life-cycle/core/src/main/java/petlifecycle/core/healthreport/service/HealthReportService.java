@@ -46,7 +46,14 @@ public class HealthReportService {
         return response;
     }
 
-    public AiResponse getAnswer(Long reportId, String question) {
+    public AiResponse getAnswer(Long reportId, String question, Long petId, Long userId) {
+        // 펫 소유권 검증
+        petAccountService.validateAndGetPetAccount(petId, userId);
+
+        // 리포트 존재 여부 확인 (선택사항)
+        // HealthReport report = healthReportRepository.findById(reportId)
+        //         .orElseThrow(() -> new IllegalArgumentException("Invalid report ID: " + reportId));
+
         // reportId를 사용할 수 있지만, 지금은 질문 내용만으로 답변을 생성합니다.
         String answer;
         if (question.contains("영양소") || question.contains("부족")) {

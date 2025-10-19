@@ -27,6 +27,7 @@ public class HealthReportController {
 
     @PostMapping("/{reportId}/ask-ai")
     public ResponseEntity<AiResponse> getAiAnswer(
+            @PathVariable Long petId,
             @PathVariable String reportId,
             @RequestBody AiQuestionRequest request,
             @RequestAttribute("userId") Long userId) {
@@ -38,7 +39,7 @@ public class HealthReportController {
             throw new IllegalArgumentException("Invalid report ID format: " + reportId);
         }
 
-        AiResponse response = healthReportService.getAnswer(parsedReportId, request.getQuestion());
+        AiResponse response = healthReportService   .getAnswer(parsedReportId, request.getQuestion(), petId, userId);
         return ResponseEntity.ok(response);
     }
 }
