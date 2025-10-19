@@ -127,10 +127,10 @@ public class AccountServiceImpl implements AccountService {
         String sessionToken = UUID.randomUUID().toString();
 
         // Redis에 세션 저장 (토큰을 키로 사용)
-        userSessionUtil.saveSession(sessionToken, account.getId(), account.getName(), account.getRole().name());
+        userSessionUtil.saveSession(sessionToken, account.getId(), account.getUsername(), account.getRole().name());
 
         return LoginResponse.of(sessionToken, account.getId(),
-                               account.getName(), account.getRole().name(), Duration.ofHours(24));
+                               account.getUsername(), account.getRole().name(), Duration.ofHours(24));
     }
 
     private Account saveOrUpdateSocialUser(OAuthAttributes attributes) {
