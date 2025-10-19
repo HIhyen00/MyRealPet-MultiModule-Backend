@@ -4,7 +4,7 @@ plugins {
 }
 
 bootJar {
-	mainClass = 'com.petlifecycle.api.ApiApplication'
+	mainClass = 'petlifecycle.api.PetLifeCycleApiApplication'
 }
 
 dependencies {
