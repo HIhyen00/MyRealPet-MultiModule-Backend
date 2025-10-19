@@ -16,6 +16,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 @ConditionalOnClass(S3Client.class)
 public class S3Properties {
     private String bucket;
-    private String region = "ap-southeast-2";
+    private String region = "ap-northeast-2";
     private String baseUrl;
 }
