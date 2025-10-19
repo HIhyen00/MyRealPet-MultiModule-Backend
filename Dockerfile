@@ -22,7 +22,11 @@ RUN chmod +x ./gradlew && \
     else \
         echo "Building standard api module: ${SERVICE_NAME}:api"; \
         ./gradlew :${SERVICE_NAME}:api:bootJar --no-daemon; \
-    fi
+    fi && \
+    echo "Removing plain jars..." && \
+    find /app -name "*-plain.jar" -type f -delete && \
+    echo "Remaining jars:" && \
+    find /app -name "*.jar" -type f
 
 # Runtime stage
 FROM amazoncorretto:17-alpine
@@ -32,6 +36,7 @@ WORKDIR /app
 
 # Copy the built jar from builder stage
 # Handles both regular api and adminApi modules
+# Only bootJar files remain (plain jars were deleted in build stage)
 COPY --from=builder /app/${SERVICE_NAME}/**/build/libs/*.jar app.jar
 
 # Add healthcheck (port will be configured in docker-compose)
